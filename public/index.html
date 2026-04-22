@@ -1,1 +1,1404 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Controle Lead Time — Expedição</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f0f2f7;
+  --surface: #fff;
+  --border: #dde3ef;
+  --navy: #1a3a6b;
+  --navy-light: #2d5a9e;
+  --text: #1a2340;
+  --muted: #6b7a99;
+  --green: #3B6D11; --green-bg: #EAF3DE;
+  --amber: #854F0B; --amber-bg: #FAEEDA;
+  --blue: #185FA5; --blue-bg: #E6F1FB;
+  --red: #A32D2D; --red-bg: #FCEBEB;
+  --gray: #5F5E5A; --gray-bg: #F1EFE8;
+  --purple: #3C3489; --purple-bg: #EEEDFE;
+  --teal: #0F6E56; --teal-bg: #E1F5EE;
+  --radius: 10px;
+  --font: 'IBM Plex Sans', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font);background:var(--bg);min-height:100vh;padding:14px;}
+.app{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 4px 24px rgba(26,58,107,.08);}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--navy);gap:10px;flex-wrap:wrap;}
+.header-title{font-size:14px;font-weight:700;color:#fff;letter-spacing:.06em;text-transform:uppercase;}
+.header-sub{font-size:11px;color:rgba(255,255,255,.55);margin-top:2px;font-family:var(--mono);}
+.header-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.hbtn{font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-family:var(--font);font-weight:500;transition:.15s;}
+.hbtn:hover{background:rgba(255,255,255,.18);}
+.hbtn-primary{background:#fff;color:var(--navy);border-color:#fff;font-weight:700;}
+.hbtn-primary:hover{background:#e8f0fb;}
+.hbtn-danger{background:rgba(163,45,45,.25);border-color:rgba(255,100,100,.3);color:#ffaaaa;}
+.hbtn-danger:hover{background:rgba(163,45,45,.4);}
+.semana-bar{display:flex;align-items:center;gap:8px;padding:8px 18px;background:#fff;border-bottom:1px solid var(--border);}
+.semana-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+.semana-select{font-size:12px;border:1px solid var(--border);border-radius:6px;padding:3px 8px;background:#fff;color:var(--text);font-family:var(--font);cursor:pointer;}
+.semana-nav{font-size:14px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:#fff;color:var(--navy);}
+.semana-nav:hover{background:var(--bg);}
+.week-badge{font-size:11px;font-family:var(--mono);padding:3px 10px;border-radius:20px;background:var(--blue-bg);color:var(--blue);font-weight:600;}
+.semana-spacer{flex:1;}
+.auto-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:#EAF3DE;color:var(--green);font-weight:600;display:flex;align-items:center;gap:3px;}
+.metrics-row{display:grid;grid-template-columns:repeat(6,1fr);background:#fff;border-bottom:1px solid var(--border);}
+.metric-card{padding:10px 14px;border-right:1px solid var(--border);position:relative;}
+.metric-card:last-child{border-right:none;}
+.metric-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.metric-value{font-size:22px;font-weight:700;color:var(--text);margin-top:1px;font-family:var(--mono);}
+.metric-value.green{color:var(--green);}
+.metric-value.red{color:var(--red);}
+.metric-value.amber{color:var(--amber);}
+.metric-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+.metric-bar{height:3px;border-radius:2px;margin-top:5px;background:var(--border);}
+.metric-bar-fill{height:100%;border-radius:2px;transition:.5s;}
+.alerts-bar{padding:6px 18px;background:#fff;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-height:32px;}
+.alert-chip{font-size:10px;padding:2px 10px;border-radius:20px;font-weight:600;display:flex;align-items:center;gap:4px;cursor:pointer;border:none;}
+.alert-chip.critical{background:var(--red-bg);color:var(--red);}
+.alert-chip.warning{background:var(--amber-bg);color:var(--amber);}
+.alert-chip.info{background:var(--blue-bg);color:var(--blue);}
+.alerts-label{font-size:10px;color:var(--muted);font-weight:600;}
+.filters-row{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);background:#fff;flex-wrap:wrap;align-items:center;}
+.filter-chip{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:.15s;font-family:var(--font);}
+.filter-chip:hover{border-color:var(--navy);color:var(--navy);}
+.filter-chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.filter-sep{width:1px;height:18px;background:var(--border);}
+.search-box{margin-left:auto;font-size:11px;border:1px solid var(--border);border-radius:20px;padding:3px 10px;background:#fff;color:var(--text);font-family:var(--font);width:160px;outline:none;}
+.search-box:focus{border-color:var(--navy-light);}
+.table-wrap{overflow-x:auto;background:#fff;}
+table{width:100%;border-collapse:collapse;font-size:11px;min-width:1700px;}
+th{text-align:center;font-size:9px;font-weight:700;color:#fff;background:var(--navy);padding:6px 6px;border-right:1px solid rgba(255,255,255,.12);white-space:nowrap;letter-spacing:.04em;text-transform:uppercase;}
+th:first-child{text-align:left;padding-left:14px;}
+th.col-draft{background:#2a4f8a;}
+th.col-auto{background:#1f5c3a;position:relative;}
+th.col-auto::after{content:'AUTO';font-size:7px;background:rgba(255,255,255,.2);padding:1px 4px;border-radius:3px;margin-left:4px;vertical-align:middle;}
+td{padding:5px 6px;border-bottom:1px solid #eef0f5;border-right:1px solid #eef0f5;color:var(--text);text-align:center;vertical-align:middle;}
+td:first-child{text-align:left;padding-left:14px;}
+td.col-draft{background:#f6f9ff;}
+tr:hover td{background:#f0f4ff!important;}
+tr:nth-child(even) td{background:#fafbfd;}
+tr:nth-child(even) td.col-draft{background:#eef3ff;}
+.dt-cell{line-height:1.3;position:relative;}
+.dt-date{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.dt-time{font-size:12px;font-weight:600;color:var(--text);font-family:var(--mono);}
+.cell-click{cursor:pointer;border-radius:4px;padding:2px 4px;transition:.15s;display:inline-block;}
+.cell-click:hover{background:#e8f0fb;}
+.cell-input{font-size:11px;border:1.5px solid var(--navy-light);border-radius:5px;padding:3px 5px;background:#fff;color:var(--text);width:140px;font-family:var(--mono);}
+.cell-input:focus{outline:none;}
+.draft-cell{display:flex;flex-direction:column;gap:2px;align-items:center;}
+.draft-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;white-space:nowrap;}
+.draft-email{background:var(--purple-bg);color:var(--purple);}
+.draft-planner{background:var(--teal-bg);color:var(--teal);}
+.draft-tipo{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;}
+.draft-edit-btn{font-size:9px;padding:1px 6px;border-radius:4px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;margin-top:2px;font-family:var(--font);}
+.draft-edit-btn:hover{background:var(--bg);}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:.02em;}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:var(--gray-bg);color:var(--gray);}
+.badge-teal{background:var(--teal-bg);color:var(--teal);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+.badge-motivo{background:#FFF3E0;color:#E65100;border:1px solid #FFCC80;font-style:italic;}
+.status-select{font-size:10px;border:1px solid var(--border);border-radius:6px;padding:2px 4px;background:#fff;font-family:var(--font);cursor:pointer;color:var(--text);}
+.lt-val{font-size:12px;font-weight:700;font-family:var(--mono);}
+.lt-bar-wrap{height:4px;border-radius:2px;background:var(--border);margin-top:2px;width:60px;margin-inline:auto;}
+.lt-bar{height:100%;border-radius:2px;}
+.obs-cell{font-size:10px;color:var(--muted);text-align:left;max-width:150px;white-space:normal;line-height:1.4;}
+.lt-sub-val{font-size:9px;font-family:var(--mono);color:inherit;opacity:.7;margin-top:1px;}
+.draft-prazo{font-size:9px;font-weight:600;padding:2px 6px;border-radius:8px;margin-top:3px;white-space:normal;line-height:1.3;text-align:center;max-width:140px;}
+.prazo-ok{background:var(--green-bg);color:var(--green);}
+.prazo-late{background:var(--red-bg);color:var(--red);border:1px solid #f5c0c0;}
+.col-draft{min-width:160px;}
+.obs-input{font-size:10px;border:1px solid var(--border);border-radius:4px;padding:2px 5px;width:140px;font-family:var(--font);}
+.act-btn{font-size:9px;padding:2px 6px;border-radius:4px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;white-space:nowrap;font-family:var(--font);}
+.act-btn:hover{background:var(--bg);}
+.act-btn.ai{background:var(--navy);color:#fff;border-color:var(--navy);}
+.act-btn.ai:hover{background:var(--navy-light);}
+.act-btn.del{color:var(--red);}
+.act-btn.del:hover{background:var(--red-bg);}
+.act-btn.rpt{background:#f0f4ff;color:var(--navy);border-color:#b8c8e8;font-weight:600;}
+.act-btn.rpt:hover{background:#dce8fb;}
+.row-actions{display:flex;gap:3px;justify-content:center;}
+.progress-steps{display:flex;gap:2px;align-items:center;}
+.step-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.step-done{background:var(--green);}
+.step-pending{background:#dde3ef;}
+.step-active{background:var(--amber);animation:pulse .8s infinite alternate;}
+@keyframes pulse{from{opacity:1}to{opacity:.4}}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,20,50,.55);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;border:1px solid var(--border);padding:22px;width:660px;max-width:96vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(26,58,107,.18);}
+.modal h2{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--text);display:flex;align-items:center;gap:8px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
+.form-group{display:flex;flex-direction:column;gap:3px;}
+.form-group label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.form-group input,.form-group select,.form-group textarea{font-size:12px;border-radius:6px;border:1px solid var(--border);padding:6px 9px;background:#fff;color:var(--text);font-family:var(--font);transition:.15s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--navy-light);box-shadow:0 0 0 2px rgba(26,58,107,.08);}
+.form-section{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.07em;margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;}
+.form-hint{font-size:10px;color:var(--muted);margin-top:2px;}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--border);}
+.btn-primary{font-size:12px;padding:7px 18px;border-radius:6px;border:none;background:var(--navy);color:#fff;cursor:pointer;font-weight:700;font-family:var(--font);transition:.15s;}
+.btn-primary:hover{background:var(--navy-light);}
+.btn-secondary{font-size:12px;padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-family:var(--font);}
+.btn-secondary:hover{background:var(--bg);}
+.btn-auto{font-size:11px;padding:5px 10px;border-radius:6px;border:1px dashed var(--teal);background:var(--teal-bg);color:var(--teal);cursor:pointer;font-family:var(--font);font-weight:600;}
+.btn-auto:hover{background:#c8eedf;}
+.ai-panel{border-top:1px solid var(--border);padding:12px 18px;background:#fff;border-radius:0 0 10px 10px;}
+.ai-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.ai-label-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse .8s infinite alternate;}
+.ai-row{display:flex;gap:8px;align-items:center;}
+.ai-input{flex:1;font-size:12px;border:1px solid var(--border);border-radius:6px;padding:7px 10px;background:#fff;color:var(--text);font-family:var(--font);}
+.ai-input:focus{outline:none;border-color:var(--navy-light);}
+.ai-send{font-size:12px;padding:7px 14px;border-radius:6px;border:none;background:var(--navy);color:#fff;cursor:pointer;white-space:nowrap;font-weight:700;font-family:var(--font);}
+.ai-quick{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.ai-quick-btn{font-size:10px;padding:2px 8px;border-radius:12px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;font-family:var(--font);}
+.ai-quick-btn:hover{border-color:var(--navy);color:var(--navy);}
+.ai-output{font-size:12px;color:#3a4a6b;line-height:1.65;margin-top:10px;padding:12px 14px;background:#f4f6fb;border-radius:8px;display:none;white-space:pre-wrap;}
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:6px;}
+.toast-item{font-size:12px;padding:10px 16px;border-radius:8px;background:#1a2340;color:#fff;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:8px;animation:slideIn .2s ease;}
+.toast-item.success{background:#2d6a10;}
+.toast-item.warning{background:#854F0B;}
+.toast-item.error{background:#A32D2D;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bottom-bar{padding:8px 18px;background:#fff;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;font-size:10px;color:var(--muted);}
+.bottom-bar strong{color:var(--text);}
+.hist-list{display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;padding-right:4px;}
+.hist-item{border-left:3px solid var(--border);padding:6px 10px;border-radius:0 6px 6px 0;background:#f8fafc;}
+.hist-item.sem-pv{border-left-color:var(--red);background:var(--red-bg);}
+.hist-item.pv-ok{border-left-color:var(--green);background:var(--green-bg);}
+.hist-item.justificado{border-left-color:var(--amber);background:var(--amber-bg);}
+.hist-item.log{border-left-color:#dde3ef;background:#fafbfd;}
+.hist-dt{font-size:9px;color:var(--muted);font-family:var(--mono);}
+.hist-tipo{font-size:10px;font-weight:700;color:var(--text);}
+.hist-desc{font-size:11px;color:var(--muted);margin-top:1px;line-height:1.4;}
+.hist-extra{font-size:10px;color:var(--navy);font-weight:600;margin-top:2px;}
+.hist-empty{font-size:12px;color:var(--muted);text-align:center;padding:20px;background:var(--bg);border-radius:6px;}
+.sem-pv-banner{background:var(--red-bg);border:1px solid #f5c0c0;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;}
+.sem-pv-banner-icon{font-size:20px;flex-shrink:0;}
+.sem-pv-banner-text{font-size:12px;color:var(--red);line-height:1.5;}
+.sem-pv-banner-time{font-size:14px;font-weight:700;color:var(--red);font-family:var(--mono);}
+.row-late td{border-left:2px solid var(--red)!important;}
+.row-warn td{border-left:2px solid var(--amber)!important;}
+.cell-missing{color:#b0b8cc;font-size:11px;}
+.semana-tag{font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);margin-left:6px;vertical-align:middle;}
+/* Loading overlay */
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(26,58,107,.18);z-index:999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.loading-box{background:#fff;border-radius:12px;padding:24px 32px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 40px rgba(26,58,107,.18);}
+.loading-spinner{width:22px;height:22px;border:3px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--navy);font-weight:600;}
+/* Relatório */
+@media print{
+  body > *:not(#relatorio-print-area){display:none!important;}
+  #relatorio-print-area{display:block!important;position:static!important;margin:0;padding:0;}
+  .rpt-no-print{display:none!important;}
+  .rpt-modal-box{box-shadow:none!important;border:none!important;max-height:none!important;}
+}
+.rpt-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,20,50,.6);z-index:500;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px;backdrop-filter:blur(3px);}
+.rpt-overlay.open{display:flex;}
+.rpt-modal-box{background:#fff;border-radius:12px;width:760px;max-width:98vw;box-shadow:0 20px 60px rgba(26,58,107,.22);overflow:hidden;}
+.rpt-header{background:var(--navy);color:#fff;padding:20px 28px;display:flex;justify-content:space-between;align-items:flex-start;}
+.rpt-title{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.7;font-family:var(--mono);}
+.rpt-cliente{font-size:22px;font-weight:700;margin-top:2px;}
+.rpt-id{font-size:11px;font-family:var(--mono);opacity:.6;margin-top:3px;}
+.rpt-header-right{text-align:right;font-size:11px;opacity:.7;font-family:var(--mono);}
+.rpt-body{padding:24px 28px;}
+.rpt-section{margin-bottom:20px;}
+.rpt-section-title{font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;padding-bottom:5px;border-bottom:2px solid var(--navy);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.rpt-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.rpt-card{background:#f6f8fd;border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.rpt-card-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;}
+.rpt-card-value{font-size:14px;font-weight:700;color:var(--text);margin-top:2px;font-family:var(--mono);}
+.rpt-card-value.green{color:var(--green);}
+.rpt-card-value.red{color:var(--red);}
+.rpt-card-value.amber{color:var(--amber);}
+.rpt-lt-block{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px;}
+.rpt-lt-card{border-radius:10px;padding:14px 16px;text-align:center;}
+.rpt-lt-card.ok{background:var(--green-bg);border:1px solid #b2d89b;}
+.rpt-lt-card.warn{background:var(--amber-bg);border:1px solid #f0c98a;}
+.rpt-lt-card.crit{background:var(--red-bg);border:1px solid #f5c0c0;}
+.rpt-lt-card.na{background:var(--gray-bg);border:1px solid #ddd;}
+.rpt-lt-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;opacity:.7;}
+.rpt-lt-val{font-size:26px;font-weight:700;font-family:var(--mono);margin:2px 0;}
+.rpt-lt-sub{font-size:10px;opacity:.8;}
+.rpt-timeline{display:flex;flex-direction:column;gap:0;}
+.rpt-tl-row{display:grid;grid-template-columns:22px 1fr 140px 90px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid #f0f2f7;}
+.rpt-tl-row:last-child{border-bottom:none;}
+.rpt-tl-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:8px;}
+.rpt-tl-dot.done{background:var(--green);color:#fff;}
+.rpt-tl-dot.pending{background:#e0e4ef;color:var(--muted);}
+.rpt-tl-dot.active{background:var(--amber);color:#fff;}
+.rpt-tl-name{font-size:11px;font-weight:600;color:var(--text);}
+.rpt-tl-name.pending{color:var(--muted);font-weight:400;}
+.rpt-tl-dt{font-size:10px;font-family:var(--mono);color:var(--muted);}
+.rpt-tl-dt.done{color:var(--text);}
+.rpt-tl-interval{font-size:10px;font-family:var(--mono);text-align:right;}
+.rpt-tl-interval.ok{color:var(--green);}
+.rpt-tl-interval.warn{color:var(--amber);}
+.rpt-tl-interval.crit{color:var(--red);}
+.rpt-occ-list{display:flex;flex-direction:column;gap:5px;}
+.rpt-occ{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:6px;font-size:11px;}
+.rpt-occ.crit{background:var(--red-bg);border-left:3px solid var(--red);}
+.rpt-occ.warn{background:var(--amber-bg);border-left:3px solid var(--amber);}
+.rpt-occ.ok{background:var(--green-bg);border-left:3px solid var(--green);}
+.rpt-occ.info{background:var(--blue-bg);border-left:3px solid var(--blue);}
+.rpt-occ-icon{flex-shrink:0;font-size:13px;}
+.rpt-occ-title{font-weight:700;}
+.rpt-occ-desc{color:var(--muted);margin-top:1px;line-height:1.4;}
+.rpt-hist{display:flex;flex-direction:column;gap:5px;}
+.rpt-hist-row{display:grid;grid-template-columns:110px 1fr;gap:8px;font-size:11px;padding:6px 8px;border-radius:6px;background:#f8fafc;border-left:2px solid var(--border);}
+.rpt-hist-row.semPV{border-left-color:var(--red);background:var(--red-bg);}
+.rpt-hist-row.pvOk{border-left-color:var(--green);background:var(--green-bg);}
+.rpt-hist-row.justificado{border-left-color:var(--amber);background:var(--amber-bg);}
+.rpt-hist-dt{font-family:var(--mono);color:var(--muted);font-size:9px;}
+.rpt-hist-tipo{font-weight:700;color:var(--text);}
+.rpt-hist-desc{color:var(--muted);font-size:10px;margin-top:1px;}
+.rpt-hist-extra{color:var(--navy);font-weight:600;font-size:10px;margin-top:2px;}
+.rpt-obs-box{background:#fffbf0;border:1px solid #ffe9a0;border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text);line-height:1.6;white-space:pre-wrap;min-height:40px;}
+.rpt-obs-empty{color:var(--muted);font-style:italic;}
+.rpt-footer{background:#f6f8fd;border-top:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.rpt-footer-info{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.rpt-progress-bar-wrap{height:8px;background:var(--border);border-radius:4px;flex:1;max-width:200px;}
+.rpt-progress-bar{height:100%;border-radius:4px;transition:.5s;}
+.rpt-status-big{font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;display:inline-flex;align-items:center;gap:6px;}
+@media(max-width:900px){.metrics-row{grid-template-columns:repeat(3,1fr);}.header-title{font-size:12px;}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Carregando dados...</div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title">Controle de Lead Time — Expedição <span class="semana-tag" id="hdr-semana">SEM —</span></div>
+      <div class="header-sub" id="header-info">Carregando...</div>
+    </div>
+    <div class="header-right">
+      <button class="hbtn" onclick="exportCSV()">⬇ Exportar CSV</button>
+      <button class="hbtn" onclick="toggleAI()">✦ Análise IA</button>
+      <button class="hbtn hbtn-primary" onclick="openModal()">＋ Novo carregamento</button>
+    </div>
+  </div>
+
+  <div class="semana-bar">
+    <span class="semana-label">Semana:</span>
+    <button class="semana-nav" onclick="navSemana(-1)">‹</button>
+    <select class="semana-select" id="semana-sel" onchange="changeSemana(this.value)"></select>
+    <button class="semana-nav" onclick="navSemana(1)">›</button>
+    <span class="week-badge" id="week-range"></span>
+    <span class="semana-spacer"></span>
+    <span class="auto-badge">⚡ Status automático</span>
+    <span class="auto-badge" style="background:#e6f1fb;color:#185fa5;">☁ Dados no Supabase</span>
+  </div>
+
+  <div class="alerts-bar" id="alerts-bar"><span class="alerts-label">Alertas:</span></div>
+
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-label">Carregamentos</div>
+      <div class="metric-value" id="m-total">—</div>
+      <div class="metric-sub">semana atual</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Liberados</div>
+      <div class="metric-value green" id="m-lib">—</div>
+      <div class="metric-bar"><div class="metric-bar-fill" id="m-lib-bar" style="background:var(--green)"></div></div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Em andamento</div>
+      <div class="metric-value amber" id="m-and">—</div>
+      <div class="metric-sub">em processo</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Ag. PV</div>
+      <div class="metric-value red" id="m-pend">—</div>
+      <div class="metric-sub">aguardando pedido venda</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Lead time médio</div>
+      <div class="metric-value" id="m-avg">—</div>
+      <div class="metric-sub">sep → liberado</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Atualizado</div>
+      <div class="metric-value" style="font-size:13px;" id="m-data">—</div>
+      <div class="metric-sub" id="m-hora">—</div>
+    </div>
+  </div>
+
+  <div class="filters-row">
+    <span style="font-size:11px;color:var(--muted);font-weight:600;">Status:</span>
+    <button class="filter-chip active" onclick="setFilter('todos',this)">Todos <span id="f-count-todos"></span></button>
+    <button class="filter-chip" onclick="setFilter('LIBERADO',this)">✓ Liberado <span id="f-count-lib"></span></button>
+    <button class="filter-chip" onclick="setFilter('TEMPERATURA / LIBERAÇÃO',this)">🌡 Temp./Liberação <span id="f-count-temp"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO FATURAMENTO',this)">🧾 Ag. Faturamento <span id="f-count-fat"></span></button>
+    <button class="filter-chip" onclick="setFilter('CARREGANDO VEÍCULO',this)">🚛 Carregando <span id="f-count-car"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO ENCOSTAR NA DOCA',this)">🅿 Ag. Doca <span id="f-count-doca"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO VEÍCULO',this)">🚚 Ag. Veículo <span id="f-count-vei"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO AVALIAÇÃO QUALIDADE',this)">🔍 Ag. Qualidade <span id="f-count-qual"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO SEPARAÇÃO',this)">📦 Ag. Separação <span id="f-count-sep"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO OE',this)">📋 Ag. OE <span id="f-count-oe"></span></button>
+    <button class="filter-chip" onclick="setFilter('AGUARDANDO PV',this)">🔴 Ag. PV <span id="f-count-pv"></span></button>
+    <span class="filter-sep"></span>
+    <button class="filter-chip" onclick="setFilter('atrasado',this)">⚠ Atrasados</button>
+    <input class="search-box" id="search-box" placeholder="🔍 Buscar cliente..." oninput="renderTable()"/>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left;min-width:120px;">Cliente</th>
+          <th>Pallets</th>
+          <th>Local</th>
+          <th class="col-draft" style="min-width:155px;">Draft</th>
+          <th>PV</th><th>OE</th><th>Separação</th><th>Qualidade</th>
+          <th>Chegada veículo</th><th>Encostou doc.</th><th>Saiu doc.</th>
+          <th>Nota fiscal</th><th>Liberado</th>
+          <th style="min-width:80px;">Lead time</th>
+          <th class="col-auto" style="min-width:100px;">Status</th>
+          <th style="min-width:130px;">Progresso</th>
+          <th>Obs.</th>
+          <th style="min-width:90px;"></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <div class="bottom-bar">
+    <strong id="bb-showing">—</strong> carregamentos exibidos ·
+    Pallets totais: <strong id="bb-pallets">—</strong> ·
+    <span id="bb-lt-info"></span>
+    <span style="flex:1;"></span>
+    <span style="color:var(--green);font-weight:600;">☁ Dados salvos no Supabase</span>
+  </div>
+
+  <div class="ai-panel" id="ai-panel" style="display:none;">
+    <div class="ai-label"><span class="ai-label-dot"></span>Assistente IA — Expedição</div>
+    <div class="ai-row">
+      <input class="ai-input" id="ai-input" placeholder="Ex: quais clientes estão atrasados? qual o gargalo da semana?" onkeydown="if(event.key==='Enter')sendAI()"/>
+      <button class="ai-send" onclick="sendAI()">Enviar ↗</button>
+    </div>
+    <div class="ai-quick">
+      <button class="ai-quick-btn" onclick="askAI('Quais carregamentos estão atrasados e por quê?')">Atrasados</button>
+      <button class="ai-quick-btn" onclick="askAI('Qual o principal gargalo operacional desta semana?')">Gargalos</button>
+      <button class="ai-quick-btn" onclick="askAI('Faça um resumo executivo da semana com os pontos críticos')">Resumo semana</button>
+      <button class="ai-quick-btn" onclick="askAI('Quais clientes precisam de atenção urgente?')">Urgentes</button>
+      <button class="ai-quick-btn" onclick="askAI('Analise o lead time médio e compare com o ideal de 4h')">Análise LT</button>
+    </div>
+    <div class="ai-output" id="ai-output"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL NOVO CARREGAMENTO -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2>📦 Novo carregamento</h2>
+    <div class="form-row">
+      <div class="form-group"><label>Cliente *</label><input id="f-cliente" placeholder="Nome do cliente" autocomplete="off"/></div>
+      <div class="form-group"><label>Qtd. pallets</label><input id="f-pallets" type="number" placeholder="0" min="0"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Local</label>
+        <select id="f-local"><option>FLK</option><option>FAZENDA</option><option>OUTRO</option></select>
+      </div>
+      <div class="form-group">
+        <label>Semana</label>
+        <select id="f-semana"></select>
+      </div>
+    </div>
+    <div class="form-section">Draft — Email / Planner</div>
+    <div class="form-row">
+      <div class="form-group"><label>Data/hora do draft</label><input id="f-draft-dt" type="datetime-local"/></div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="f-draft-tipo">
+          <option value="">— Nenhum —</option>
+          <option value="EMAIL">✉ Email</option>
+          <option value="PLANNER">☑ Planner</option>
+          <option value="EMAIL+PLANNER">✉☑ Email + Planner</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-section">Pedido</div>
+    <div class="form-row">
+      <div class="form-group"><label>PV (data/hora)</label><input id="f-pv" type="datetime-local"/></div>
+      <div class="form-group"><label>OE (data/hora)</label><input id="f-oe" type="datetime-local"/></div>
+    </div>
+    <div class="form-section">Etapas de expedição</div>
+    <div class="form-row">
+      <div class="form-group"><label>Separação da carga</label><input id="f-sep" type="datetime-local"/></div>
+      <div class="form-group"><label>Avaliação da qualidade</label><input id="f-aval" type="datetime-local"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Chegada veículo</label><input id="f-cheg" type="datetime-local"/></div>
+      <div class="form-group"><label>Encostou na doc.</label><input id="f-enc" type="datetime-local"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Saiu da doc.</label><input id="f-saiu" type="datetime-local"/></div>
+      <div class="form-group"><label>Nota fiscal</label><input id="f-nf" type="datetime-local"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Caminhão liberado</label>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="f-lib" type="datetime-local" style="flex:1;"/>
+          <button class="btn-auto" onclick="setNow('f-lib')">⚡ Agora</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Observação</label>
+        <input id="f-obs" placeholder="Ex: aguardando temperatura..."/>
+      </div>
+    </div>
+    <div class="form-hint" style="margin-bottom:8px;">💡 O status será calculado automaticamente com base nas etapas preenchidas.</div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn-primary" onclick="addRow()">✓ Salvar carregamento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DRAFT EDIT -->
+<div class="modal-overlay" id="draft-modal" onclick="if(event.target===this)document.getElementById('draft-modal').classList.remove('open')">
+  <div class="modal" style="width:360px;">
+    <h2>✉ Editar Draft</h2>
+    <input type="hidden" id="de-id"/>
+    <div class="form-group" style="margin-bottom:10px;">
+      <label>Data e hora</label>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input id="de-dt" type="datetime-local" style="flex:1;"/>
+        <button class="btn-auto" onclick="setNow('de-dt')">⚡ Agora</button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Tipo</label>
+      <select id="de-tipo">
+        <option value="">— Nenhum —</option>
+        <option value="EMAIL">✉ Email</option>
+        <option value="PLANNER">☑ Planner</option>
+        <option value="EMAIL+PLANNER">✉☑ Email + Planner</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('draft-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn-primary" onclick="saveDraftEdit()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CÉLULA -->
+<div class="modal-overlay" id="cell-modal" onclick="if(event.target===this)closeCellModal()">
+  <div class="modal" style="width:340px;">
+    <h2 id="cell-modal-title">Editar campo</h2>
+    <input type="hidden" id="cm-id"/>
+    <input type="hidden" id="cm-field"/>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label id="cm-label">Data e hora</label>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input id="cm-dt" type="datetime-local" style="flex:1;"/>
+        <button class="btn-auto" onclick="setNow('cm-dt')">⚡ Agora</button>
+      </div>
+      <div class="form-hint" style="margin-top:4px;">Clique em ⚡ Agora para registrar o horário atual</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeCellModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveCellEdit()">✓ Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOTIVO SEM PV -->
+<div class="modal-overlay" id="motivo-modal" onclick="if(event.target===this)closeMotivo()">
+  <div class="modal" style="width:420px;">
+    <h2>⚠ Atenção — PV não registrado</h2>
+    <div class="sem-pv-banner">
+      <div class="sem-pv-banner-icon">🚛</div>
+      <div class="sem-pv-banner-text">
+        Você está tentando preencher o campo <strong id="mv-field-label"></strong> sem que o <strong>Pedido de Venda (PV)</strong> esteja registrado.<br/>
+        Informe o motivo para que fique registrado no histórico deste carregamento.
+      </div>
+    </div>
+    <input type="hidden" id="mv-id"/>
+    <input type="hidden" id="mv-field"/>
+    <div class="form-group" style="margin-bottom:14px;">
+      <label>Motivo *</label>
+      <textarea id="mv-motivo" rows="3" placeholder="Ex: veículo chegou antes da emissão do PV..." style="resize:vertical;font-size:12px;border-radius:6px;border:1px solid var(--border);padding:8px;font-family:var(--font);width:100%;"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeMotivo()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmMotivo()">✓ Registrar motivo e continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HISTÓRICO -->
+<div class="modal-overlay" id="hist-modal" onclick="if(event.target===this)document.getElementById('hist-modal').classList.remove('open')">
+  <div class="modal" style="width:540px;">
+    <h2 id="hist-modal-title">📋 Histórico do carregamento</h2>
+    <div id="hist-sem-pv-info"></div>
+    <div class="hist-list" id="hist-list"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="document.getElementById('hist-modal').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RELATÓRIO -->
+<div class="rpt-overlay" id="rpt-modal" onclick="if(event.target===this)closeRelatorio()">
+  <div class="rpt-modal-box" id="relatorio-print-area">
+    <div id="rpt-content"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════
+const API = '/api';
+
+// ═══════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════
+let data = [];
+let currentFilter = 'todos';
+let currentSemana = getWeekNumber(new Date());
+
+const FIELD_LABELS = {
+  pv:'PV', oe:'OE', sep:'Separação da carga', aval:'Avaliação qualidade',
+  cheg:'Chegada veículo', enc:'Encostou na doc.', saiu:'Saiu da doc.',
+  nf:'Nota fiscal', lib:'Caminhão liberado',
+  draft_dt:'Draft', draft_tipo:'Tipo Draft'
+};
+const FIELDS_SEM_PV_LIVRE = ['pv','draft_dt','draft_tipo'];
+
+// ═══════════════════════════════════════════
+// API CALLS
+// ═══════════════════════════════════════════
+async function apiFetch(path, method='GET', body=null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(API + path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.detail || `Erro ${res.status}`);
+  }
+  return res.json();
+}
+
+async function carregarDados() {
+  showLoading(true);
+  try {
+    data = await apiFetch(`/carregamentos/?semana=${currentSemana}`);
+    // normaliza campos para compatibilidade com o frontend
+    data = data.map(normalizar);
+  } catch(e) {
+    toast('Erro ao carregar dados: ' + e.message, 'error');
+  }
+  showLoading(false);
+  renderTable();
+  updateMetrics();
+  renderAlerts();
+}
+
+function normalizar(r) {
+  // API retorna snake_case, frontend usa camelCase para draft
+  return {
+    ...r,
+    draftDt:   r.draft_dt   || '',
+    draftTipo: r.draft_tipo || '',
+    motivoStatus: r.motivo_status || ''
+  };
+}
+
+function showLoading(v) {
+  document.getElementById('loading-overlay').style.display = v ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════════
+// SEMANAS
+// ═══════════════════════════════════════════
+function getWeekNumber(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+}
+
+function getWeekRange(weekNum, year) {
+  const jan1 = new Date(year, 0, 1);
+  const days = (weekNum - 1) * 7;
+  const monday = new Date(jan1.getTime() + (days - jan1.getDay() + 1) * 86400000);
+  const sunday = new Date(monday.getTime() + 6 * 86400000);
+  const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+  return `${fmt(monday)} – ${fmt(sunday)}/${sunday.getFullYear()}`;
+}
+
+function buildSemanaOptions() {
+  const sel = document.getElementById('semana-sel');
+  const fSel = document.getElementById('f-semana');
+  const year = new Date().getFullYear();
+  sel.innerHTML = '';
+  if (fSel) fSel.innerHTML = '';
+  for (let w = 1; w <= 52; w++) {
+    const label = `Semana ${w} (${getWeekRange(w, year)})`;
+    const opt1 = `<option value="${w}" ${w===currentSemana?'selected':''}>${label}</option>`;
+    sel.innerHTML += opt1;
+    if (fSel) fSel.innerHTML += opt1;
+  }
+  document.getElementById('week-range').textContent = getWeekRange(currentSemana, new Date().getFullYear());
+  document.getElementById('hdr-semana').textContent = `SEM ${currentSemana}`;
+}
+
+function changeSemana(v) {
+  currentSemana = parseInt(v);
+  buildSemanaOptions();
+  carregarDados();
+}
+
+function navSemana(d) {
+  currentSemana = Math.max(1, Math.min(52, currentSemana + d));
+  document.getElementById('semana-sel').value = currentSemana;
+  changeSemana(currentSemana);
+}
+
+// ═══════════════════════════════════════════
+// PARSE / FORMAT
+// ═══════════════════════════════════════════
+function parseDT(s) {
+  if (!s) return null;
+  try {
+    const [d,t] = s.split(' ');
+    const [dd,mm,yy] = d.split('/');
+    return new Date(`${yy}-${mm}-${dd}T${t||'00:00'}`);
+  } catch { return null; }
+}
+
+function toLocalDT(s) {
+  if (!s) return '';
+  const [d,t] = s.split(' ');
+  const [dd,mm,yy] = d.split('/');
+  return `${yy}-${mm}-${dd}T${t||'00:00'}`;
+}
+
+function fromLocalDT(v) {
+  if (!v) return '';
+  const [date,time] = v.split('T');
+  const [yy,mm,dd] = date.split('-');
+  return `${dd}/${mm}/${yy} ${time}`;
+}
+
+function nowStr() {
+  const n = new Date();
+  const pad = x => String(x).padStart(2,'0');
+  return `${pad(n.getDate())}/${pad(n.getMonth()+1)}/${n.getFullYear()} ${pad(n.getHours())}:${pad(n.getMinutes())}`;
+}
+
+function diffHoras(dtStr1, dtStr2) {
+  const a = parseDT(dtStr1), b = parseDT(dtStr2);
+  if (!a || !b) return null;
+  return Math.abs((b - a) / 3600000);
+}
+
+function getLeadTime(row) {
+  const start = parseDT(row.sep) || parseDT(row.pv);
+  const end = parseDT(row.lib);
+  if (!start || !end) return null;
+  return (end - start) / 3600000;
+}
+
+function ltColor(h) {
+  if (h === null) return 'var(--muted)';
+  if (h <= 4) return 'var(--green)';
+  if (h <= 8) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+function fmtLT(h) {
+  if (h === null) return '—';
+  const totalMin = Math.round(h * 60);
+  const days = Math.floor(totalMin / 1440);
+  const remMin = totalMin % 1440;
+  const hrs  = Math.floor(remMin / 60);
+  const mins = remMin % 60;
+  const pad  = n => String(n).padStart(2,'0');
+  if (days > 0) return { short: `${days}d ${hrs}h${pad(mins)}`, full: `(${days*24+hrs}h${pad(mins)})` };
+  return { short: `${hrs}h${pad(mins)}`, full: null };
+}
+
+function fmtInterval(h) {
+  if (h === null) return null;
+  const totalMin = Math.round(Math.abs(h) * 60);
+  const hrs  = Math.floor(totalMin / 60);
+  const mins = totalMin % 60;
+  return `+${hrs}h${String(mins).padStart(2,'0')}`;
+}
+
+function fmtDT(s, field, id) {
+  const btn = `<button class="cell-click" onclick="openCellEdit(${id},'${field}')" title="Clique para editar">`;
+  if (!s) return `${btn}<span class="cell-missing">+ registrar</span></button>`;
+  const [d,t] = s.split(' ');
+  return `${btn}<div class="dt-cell"><div class="dt-date">${d}</div><div class="dt-time">${t||''}</div></div></button>`;
+}
+
+// ═══════════════════════════════════════════
+// AUTO STATUS
+// ═══════════════════════════════════════════
+function autoStatus(row) {
+  if (row.motivoStatus && !row.pv) return row.motivoStatus;
+  if (row.lib)  return 'LIBERADO';
+  if (row.nf)   return 'TEMPERATURA / LIBERAÇÃO';
+  if (row.saiu) return 'AGUARDANDO FATURAMENTO';
+  if (row.enc)  return 'CARREGANDO VEÍCULO';
+  if (row.cheg && !row.pv) return 'AGUARDANDO PV';
+  if (row.cheg) return 'AGUARDANDO ENCOSTAR NA DOCA';
+  if (row.aval) return 'AGUARDANDO VEÍCULO';
+  if (row.sep)  return 'AGUARDANDO AVALIAÇÃO QUALIDADE';
+  if (row.oe)   return 'AGUARDANDO SEPARAÇÃO';
+  if (row.pv)   return 'AGUARDANDO OE';
+  if (row.draftDt) return 'AGUARDANDO PV';
+  return 'SEM REGISTRO';
+}
+
+// ═══════════════════════════════════════════
+// DRAFT
+// ═══════════════════════════════════════════
+function getDraftAlert(row) {
+  if (!row.cheg) return null;
+  const cheg = parseDT(row.cheg);
+  if (!cheg) return null;
+  if (!row.draftDt) return { ok: false, label: 'Draft não registrado', antecedencia: null };
+  const draft = parseDT(row.draftDt);
+  if (!draft) return null;
+  const horas = (cheg - draft) / 3600000;
+  const ant = fmtInterval(Math.abs(horas));
+  if (horas >= 24) return { ok: true,  label: `Draft com ${ant} de antecedência`, antecedencia: horas };
+  if (horas >= 0)  return { ok: false, label: `Fora do prazo – Draft tardio (${ant})`, antecedencia: horas };
+  return { ok: false, label: `Draft após chegada do veículo (${ant})`, antecedencia: horas };
+}
+
+function fmtDraft(row) {
+  const alert = getDraftAlert(row);
+  const alertHtml = alert ? `<div class="draft-prazo ${alert.ok?'prazo-ok':'prazo-late'}">${alert.ok?'✓':'⚠'} ${alert.label}</div>` : '';
+  const dtBtn = row.draftDt
+    ? `<button class="cell-click" onclick="openDraftEdit(${row.id})" title="Editar draft"><div class="dt-cell"><div class="dt-date">${row.draftDt.split(' ')[0]}</div><div class="dt-time">${row.draftDt.split(' ')[1]||''}</div></div></button>`
+    : `<button class="draft-edit-btn" onclick="openDraftEdit(${row.id})">+ Draft</button>`;
+  const tipoHtml = row.draftTipo
+    ? `<div class="draft-tipo">
+        ${row.draftTipo==='EMAIL'||row.draftTipo==='EMAIL+PLANNER'?'<span class="draft-tag draft-email">✉ Email</span>':''}
+        ${row.draftTipo==='PLANNER'||row.draftTipo==='EMAIL+PLANNER'?'<span class="draft-tag draft-planner">☑ Planner</span>':''}
+       </div>` : '';
+  return `<div class="draft-cell">${dtBtn}${tipoHtml}${alertHtml}</div>`;
+}
+
+// ═══════════════════════════════════════════
+// RENDER TABLE
+// ═══════════════════════════════════════════
+const BADGE = {
+  'LIBERADO':'badge-green','TEMPERATURA / LIBERAÇÃO':'badge-teal',
+  'AGUARDANDO FATURAMENTO':'badge-purple','CARREGANDO VEÍCULO':'badge-blue',
+  'AGUARDANDO ENCOSTAR NA DOCA':'badge-blue','AGUARDANDO VEÍCULO':'badge-amber',
+  'AGUARDANDO AVALIAÇÃO QUALIDADE':'badge-amber','AGUARDANDO SEPARAÇÃO':'badge-amber',
+  'AGUARDANDO OE':'badge-amber','AGUARDANDO PV':'badge-red','SEM REGISTRO':'badge-gray',
+};
+
+function getBadgeClass(s) { return BADGE[s] || 'badge-motivo'; }
+
+function getProgressDots(row) {
+  const steps = ['pv','oe','sep','aval','cheg','enc','saiu','nf','lib'];
+  return steps.map((s,i) => {
+    const done = !!row[s];
+    const prev = i === 0 || !!row[steps[i-1]];
+    let cls = done ? 'step-done' : (prev && !done ? 'step-active' : 'step-pending');
+    return `<div class="step-dot ${cls}" title="${FIELD_LABELS[s]||s}"></div>`;
+  }).join('');
+}
+
+function renderTable() {
+  const search = (document.getElementById('search-box')?.value||'').toLowerCase();
+  let rows = [...data];
+  if (currentFilter === 'atrasado') {
+    rows = rows.filter(r => { const lt = getLeadTime(r); return lt !== null && lt > 8; });
+  } else if (currentFilter !== 'todos') {
+    rows = rows.filter(r => autoStatus(r) === currentFilter);
+  }
+  if (search) rows = rows.filter(r => r.cliente.toLowerCase().includes(search));
+
+  const body = document.getElementById('table-body');
+  body.innerHTML = rows.map(row => {
+    const status = autoStatus(row);
+    const lt = getLeadTime(row);
+    const bc = getBadgeClass(status);
+    const ltFmt = fmtLT(lt);
+    const ltStr  = typeof ltFmt === 'object' ? ltFmt.short : ltFmt;
+    const ltFull = typeof ltFmt === 'object' ? ltFmt.full  : null;
+    const ltBarW = lt !== null ? Math.min(100, (lt/48)*100) : 0;
+    const rowClass = lt!==null&&lt>8 ? 'row-late' : (lt!==null&&lt>4 ? 'row-warn' : '');
+
+    return `<tr class="${rowClass}">
+      <td style="font-weight:700;">${row.cliente}</td>
+      <td>${row.pallets||'—'}</td>
+      <td><span style="font-size:10px;padding:2px 7px;border-radius:10px;background:#f0f2f7;color:var(--muted);font-weight:600;">${row.local}</span></td>
+      <td class="col-draft">${fmtDraft(row)}</td>
+      <td>${fmtDT(row.pv,'pv',row.id)}</td>
+      <td>${fmtDT(row.oe,'oe',row.id)}</td>
+      <td>${fmtDT(row.sep,'sep',row.id)}</td>
+      <td>${fmtDT(row.aval,'aval',row.id)}</td>
+      <td>${fmtDT(row.cheg,'cheg',row.id)}</td>
+      <td>${fmtDT(row.enc,'enc',row.id)}</td>
+      <td>${fmtDT(row.saiu,'saiu',row.id)}</td>
+      <td>${fmtDT(row.nf,'nf',row.id)}</td>
+      <td>${fmtDT(row.lib,'lib',row.id)}</td>
+      <td>
+        <span class="lt-val" style="color:${ltColor(lt)}">${ltStr}</span>
+        ${ltFull ? `<div class="lt-sub-val" style="color:${ltColor(lt)}">${ltFull}</div>` : ''}
+        <div class="lt-bar-wrap"><div class="lt-bar" style="width:${ltBarW}%;background:${ltColor(lt)};"></div></div>
+      </td>
+      <td><span class="badge ${bc}">${status}</span></td>
+      <td><div class="progress-steps">${getProgressDots(row)}</div></td>
+      <td class="obs-cell">
+        <input class="obs-input" value="${(row.obs||'').replace(/"/g,'&quot;')}" placeholder="Observação..."
+          onchange="updateObs(${row.id},this.value)"
+          style="width:130px;font-size:10px;border:1px solid transparent;border-radius:4px;padding:2px 4px;background:transparent;"
+          onfocus="this.style.borderColor='var(--border)';this.style.background='#fff'"
+          onblur="this.style.borderColor='transparent';this.style.background='transparent'"/>
+      </td>
+      <td>
+        <div class="row-actions">
+          <button class="act-btn rpt" onclick="openRelatorio(${row.id})">📄 Rel.</button>
+          <button class="act-btn" onclick="openHistorico(${row.id})">📋</button>
+          <button class="act-btn ai" onclick="fillAI(${row.id})">IA ↗</button>
+          <button class="act-btn del" onclick="deleteRow(${row.id})">✕</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const pallets = rows.reduce((a,r)=>a+(parseInt(r.pallets)||0),0);
+  document.getElementById('bb-showing').textContent = rows.length;
+  document.getElementById('bb-pallets').textContent = pallets;
+  const lts = rows.map(getLeadTime).filter(v=>v!==null);
+  const avgLTh = lts.length ? lts.reduce((a,b)=>a+b,0)/lts.length : null;
+  const avgLTfmt = fmtLT(avgLTh);
+  const avgLTstr = typeof avgLTfmt === 'object' ? (avgLTfmt.short + (avgLTfmt.full?' '+avgLTfmt.full:'')) : avgLTfmt;
+  document.getElementById('bb-lt-info').textContent = `LT médio filtro: ${avgLTstr}`;
+}
+
+// ═══════════════════════════════════════════
+// METRICS & ALERTS
+// ═══════════════════════════════════════════
+function updateMetrics() {
+  const total = data.length;
+  const lib   = data.filter(r => autoStatus(r) === 'LIBERADO').length;
+  const em_andamento = data.filter(r => !['LIBERADO','AGUARDANDO PV','SEM REGISTRO'].includes(autoStatus(r))).length;
+  const ag_pv = data.filter(r => autoStatus(r) === 'AGUARDANDO PV').length;
+  const lts   = data.map(getLeadTime).filter(v=>v!==null);
+  const avgH  = lts.length ? lts.reduce((a,b)=>a+b,0)/lts.length : null;
+  const avgFmt2 = fmtLT(avgH);
+  const avg = typeof avgFmt2 === 'object' ? (avgFmt2.short+(avgFmt2.full?' '+avgFmt2.full:'')) : avgFmt2;
+
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-lib').textContent   = lib;
+  document.getElementById('m-and').textContent   = em_andamento;
+  document.getElementById('m-pend').textContent  = ag_pv;
+  document.getElementById('m-avg').textContent   = avg;
+  const pct = total ? Math.round((lib/total)*100) : 0;
+  document.getElementById('m-lib-bar').style.width = pct+'%';
+
+  const cnt = s => data.filter(r => autoStatus(r) === s).length;
+  document.getElementById('f-count-todos').textContent = `(${total})`;
+  document.getElementById('f-count-lib').textContent   = `(${lib})`;
+  document.getElementById('f-count-temp').textContent  = `(${cnt('TEMPERATURA / LIBERAÇÃO')})`;
+  document.getElementById('f-count-fat').textContent   = `(${cnt('AGUARDANDO FATURAMENTO')})`;
+  document.getElementById('f-count-car').textContent   = `(${cnt('CARREGANDO VEÍCULO')})`;
+  document.getElementById('f-count-doca').textContent  = `(${cnt('AGUARDANDO ENCOSTAR NA DOCA')})`;
+  document.getElementById('f-count-vei').textContent   = `(${cnt('AGUARDANDO VEÍCULO')})`;
+  document.getElementById('f-count-qual').textContent  = `(${cnt('AGUARDANDO AVALIAÇÃO QUALIDADE')})`;
+  document.getElementById('f-count-sep').textContent   = `(${cnt('AGUARDANDO SEPARAÇÃO')})`;
+  document.getElementById('f-count-oe').textContent    = `(${cnt('AGUARDANDO OE')})`;
+  document.getElementById('f-count-pv').textContent    = `(${cnt('AGUARDANDO PV')})`;
+
+  const now = new Date();
+  document.getElementById('m-data').textContent = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+  document.getElementById('m-hora').textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  document.getElementById('header-info').textContent = `Semana ${currentSemana} · ${total} carregamento${total!==1?'s':''} registrado${total!==1?'s':''}`;
+}
+
+function renderAlerts() {
+  const bar = document.getElementById('alerts-bar');
+  const alerts = [];
+  const late = data.filter(r => { const lt = getLeadTime(r); return lt !== null && lt > 8; });
+  if (late.length) alerts.push(`<button class="alert-chip critical" onclick="setFilter('atrasado',this)">⚠ ${late.length} atrasado${late.length>1?'s':''} (LT > 8h)</button>`);
+  const agPVcheg = data.filter(r => autoStatus(r) === 'AGUARDANDO PV' && r.cheg);
+  if (agPVcheg.length) alerts.push(`<button class="alert-chip critical" onclick="setFilter('AGUARDANDO PV',this)">🚛 ${agPVcheg.length} veículo${agPVcheg.length>1?'s':''} aguardando PV</button>`);
+  const draftFora = data.filter(r => { const a = getDraftAlert(r); return a && !a.ok; });
+  if (draftFora.length) alerts.push(`<button class="alert-chip critical">🚨 ${draftFora.length} draft${draftFora.length>1?'s':''} fora do prazo (&lt; 24h)</button>`);
+  const semDraft = data.filter(r => !r.draftDt && r.cheg);
+  if (semDraft.length) alerts.push(`<span class="alert-chip critical">✉ ${semDraft.length} sem draft — veículo já chegou</span>`);
+  const lts = data.map(getLeadTime).filter(v=>v!==null);
+  const avg = lts.length ? lts.reduce((a,b)=>a+b,0)/lts.length : 0;
+  if (avg > 6) {
+    const avgFmt = fmtLT(avg);
+    alerts.push(`<span class="alert-chip warning">📊 LT médio: ${avgFmt.short}${avgFmt.full?' '+avgFmt.full:''} (meta: ≤4h)</span>`);
+  }
+  if (!alerts.length) alerts.push('<span style="font-size:11px;color:var(--green);">✓ Nenhum alerta crítico no momento</span>');
+  bar.innerHTML = '<span class="alerts-label">Alertas:</span>' + alerts.join('');
+}
+
+// ═══════════════════════════════════════════
+// CELL EDIT — salva na API
+// ═══════════════════════════════════════════
+function openCellEdit(id, field) {
+  const row = data.find(r => r.id === id);
+  if (!row.pv && !FIELDS_SEM_PV_LIVRE.includes(field)) {
+    document.getElementById('mv-id').value = id;
+    document.getElementById('mv-field').value = field;
+    document.getElementById('mv-field-label').textContent = FIELD_LABELS[field]||field;
+    document.getElementById('mv-motivo').value = '';
+    document.getElementById('motivo-modal').classList.add('open');
+    return;
+  }
+  _openCellEditDirect(id, field);
+}
+
+function _openCellEditDirect(id, field) {
+  const row = data.find(r => r.id === id);
+  document.getElementById('cm-id').value = id;
+  document.getElementById('cm-field').value = field;
+  document.getElementById('cell-modal-title').textContent = `Editar — ${FIELD_LABELS[field]||field}`;
+  document.getElementById('cm-label').textContent = FIELD_LABELS[field]||field;
+  document.getElementById('cm-dt').value = toLocalDT(row[field]);
+  document.getElementById('cell-modal').classList.add('open');
+}
+
+function closeCellModal() { document.getElementById('cell-modal').classList.remove('open'); }
+
+async function saveCellEdit() {
+  const id = parseInt(document.getElementById('cm-id').value);
+  const field = document.getElementById('cm-field').value;
+  const newVal = fromLocalDT(document.getElementById('cm-dt').value);
+  closeCellModal();
+  try {
+    const updated = await apiFetch(`/carregamentos/${id}/campo`, 'PATCH', { field, value: newVal });
+    const idx = data.findIndex(r => r.id === id);
+    if (idx !== -1) data[idx] = normalizar(updated);
+    // Lógica especial: PV preenchido após chegada sem PV
+    const row = data[idx];
+    if (field === 'pv' && newVal && row.cheg) {
+      const horas = diffHoras(row.cheg, newVal);
+      if (horas !== null) {
+        await apiFetch(`/historico/${id}`, 'POST', {
+          dt: nowStr(), tipo: '✅ PV INCLUÍDO',
+          descricao: `PV registrado ${horas.toFixed(1)}h após chegada do veículo. PV: ${newVal}`, extra: ''
+        });
+      }
+    }
+    renderTable(); updateMetrics(); renderAlerts();
+    toast(`${FIELD_LABELS[field]||field} atualizado`, 'success');
+  } catch(e) { toast('Erro ao salvar: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// MOTIVO SEM PV
+// ═══════════════════════════════════════════
+function closeMotivo() { document.getElementById('motivo-modal').classList.remove('open'); }
+
+async function confirmMotivo() {
+  const id = parseInt(document.getElementById('mv-id').value);
+  const field = document.getElementById('mv-field').value;
+  const motivo = document.getElementById('mv-motivo').value.trim();
+  if (!motivo) { toast('Informe o motivo para continuar', 'error'); return; }
+  closeMotivo();
+  try {
+    const updated = await apiFetch(`/carregamentos/${id}/motivo`, 'PATCH', { field, value: '', motivo });
+    const idx = data.findIndex(r => r.id === id);
+    if (idx !== -1) data[idx] = normalizar(updated);
+    renderTable(); updateMetrics(); renderAlerts();
+    toast(`Status atualizado: "${motivo}"`, 'warning');
+    _openCellEditDirect(id, field);
+  } catch(e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// DRAFT EDIT
+// ═══════════════════════════════════════════
+function openDraftEdit(id) {
+  const row = data.find(r => r.id === id);
+  document.getElementById('de-id').value = id;
+  document.getElementById('de-dt').value = toLocalDT(row.draftDt);
+  document.getElementById('de-tipo').value = row.draftTipo || '';
+  document.getElementById('draft-modal').classList.add('open');
+}
+
+async function saveDraftEdit() {
+  const id = parseInt(document.getElementById('de-id').value);
+  const dt = fromLocalDT(document.getElementById('de-dt').value);
+  const tipo = document.getElementById('de-tipo').value;
+  document.getElementById('draft-modal').classList.remove('open');
+  try {
+    await apiFetch(`/carregamentos/${id}/campo`, 'PATCH', { field: 'draft_dt', value: dt });
+    await apiFetch(`/carregamentos/${id}/campo`, 'PATCH', { field: 'draft_tipo', value: tipo });
+    const updated = await apiFetch(`/carregamentos/${id}`);
+    const idx = data.findIndex(r => r.id === id);
+    if (idx !== -1) data[idx] = normalizar(updated);
+    renderTable(); toast('Draft atualizado', 'success');
+  } catch(e) { toast('Erro ao salvar draft: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// OBS
+// ═══════════════════════════════════════════
+async function updateObs(id, val) {
+  try {
+    await apiFetch(`/carregamentos/${id}/obs`, 'PATCH', { obs: val });
+    const idx = data.findIndex(r => r.id === id);
+    if (idx !== -1) data[idx].obs = val;
+    toast('Observação salva', 'success');
+  } catch(e) { toast('Erro ao salvar obs: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// NOVO CARREGAMENTO
+// ═══════════════════════════════════════════
+function openModal() {
+  buildSemanaOptions();
+  document.getElementById('f-semana').value = currentSemana;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+async function addRow() {
+  const cliente = document.getElementById('f-cliente').value.trim();
+  if (!cliente) { toast('Informe o nome do cliente', 'error'); return; }
+  const semana = parseInt(document.getElementById('f-semana').value) || currentSemana;
+  const payload = {
+    cliente: cliente.toUpperCase(),
+    pallets: parseInt(document.getElementById('f-pallets').value) || null,
+    local:   document.getElementById('f-local').value,
+    semana,
+    draft_dt:   fromLocalDT(document.getElementById('f-draft-dt').value),
+    draft_tipo: document.getElementById('f-draft-tipo').value,
+    pv:  fromLocalDT(document.getElementById('f-pv').value),
+    oe:  fromLocalDT(document.getElementById('f-oe').value),
+    sep: fromLocalDT(document.getElementById('f-sep').value),
+    aval:fromLocalDT(document.getElementById('f-aval').value),
+    cheg:fromLocalDT(document.getElementById('f-cheg').value),
+    enc: fromLocalDT(document.getElementById('f-enc').value),
+    saiu:fromLocalDT(document.getElementById('f-saiu').value),
+    nf:  fromLocalDT(document.getElementById('f-nf').value),
+    lib: fromLocalDT(document.getElementById('f-lib').value),
+    obs: document.getElementById('f-obs').value || ''
+  };
+  try {
+    const novo = await apiFetch('/carregamentos/', 'POST', payload);
+    if (parseInt(novo.semana) === currentSemana) data.push(normalizar(novo));
+    closeModal();
+    renderTable(); updateMetrics(); renderAlerts();
+    toast(`Carregamento "${cliente}" adicionado`, 'success');
+    ['f-cliente','f-pallets','f-draft-dt','f-pv','f-oe','f-sep','f-aval','f-cheg','f-enc','f-saiu','f-nf','f-lib','f-obs']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('f-draft-tipo').value = '';
+  } catch(e) { toast('Erro ao criar: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════════
+async function deleteRow(id) {
+  const row = data.find(r=>r.id===id);
+  if (!confirm(`Remover carregamento de "${row.cliente}"?`)) return;
+  try {
+    await apiFetch(`/carregamentos/${id}`, 'DELETE');
+    data = data.filter(r=>r.id!==id);
+    renderTable(); updateMetrics(); renderAlerts();
+    toast('Carregamento removido', 'warning');
+  } catch(e) { toast('Erro ao remover: ' + e.message, 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// FILTER / SEARCH
+// ═══════════════════════════════════════════
+function setFilter(s, el) {
+  currentFilter = s;
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderTable();
+}
+
+function setNow(fieldId) {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById(fieldId).value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+// ═══════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════
+function exportCSV() {
+  const headers = ['ID','Cliente','Pallets','Local','Semana','Draft Dt','Draft Tipo','PV','OE','Separação','Qualidade','Chegada','Encostou','Saiu','NF','Liberado','Lead Time (h)','Status','Obs'];
+  const rows = data.map(r => {
+    const lt = getLeadTime(r);
+    return [r.id,r.cliente,r.pallets,r.local,r.semana,r.draftDt,r.draftTipo,r.pv,r.oe,r.sep,r.aval,r.cheg,r.enc,r.saiu,r.nf,r.lib,lt?lt.toFixed(1):'',autoStatus(r),r.obs||'']
+      .map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `lead_time_sem${currentSemana}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exportado!', 'success');
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+function toast(msg, type='info') {
+  const cont = document.getElementById('toast');
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  cont.appendChild(el);
+  setTimeout(()=>el.remove(), 3500);
+}
+
+// ═══════════════════════════════════════════
+// AI — chama via backend (chave protegida)
+// ═══════════════════════════════════════════
+function toggleAI() {
+  const p = document.getElementById('ai-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function fillAI(id) {
+  const row = data.find(r => r.id === id);
+  const lt = getLeadTime(row);
+  document.getElementById('ai-panel').style.display = 'block';
+  document.getElementById('ai-input').value = `Analise o carregamento do cliente ${row.cliente}: status ${autoStatus(row)}, ${row.pallets||'?'} pallets, local ${row.local}, draft=${row.draftTipo||'nenhum'} em ${row.draftDt||'-'}, lead time ${lt?lt.toFixed(1)+'h':'não calculado'}. Obs: "${row.obs||'nenhuma'}". Identifique gargalos e dê recomendações.`;
+  sendAI();
+}
+
+function askAI(q) {
+  document.getElementById('ai-input').value = q;
+  document.getElementById('ai-panel').style.display = 'block';
+  sendAI();
+}
+
+async function sendAI() {
+  const input = document.getElementById('ai-input');
+  const output = document.getElementById('ai-output');
+  const q = input.value.trim();
+  if (!q) return;
+  output.style.display = 'block';
+  output.textContent = '⏳ Analisando dados da expedição...';
+  input.value = '';
+  const ctx = data.map(r => {
+    const lt = getLeadTime(r);
+    return `${r.cliente}: ${r.pallets||'?'}p, ${r.local}, sem${r.semana}, draft=${r.draftTipo||'-'} ${r.draftDt||''}, PV=${r.pv||'-'}, sep=${r.sep||'-'}, lib=${r.lib||'-'}, status=${autoStatus(r)}, LT=${lt?lt.toFixed(1)+'h':'-'}, obs="${r.obs||''}"`;
+  }).join('\n');
+  try {
+    const res = await apiFetch('/ai/chat', 'POST', { pergunta: q, contexto: ctx, semana: currentSemana });
+    output.textContent = res.resposta || 'Sem resposta.';
+  } catch(e) {
+    output.textContent = 'Erro ao consultar IA: ' + e.message;
+  }
+}
+
+// ═══════════════════════════════════════════
+// HISTÓRICO — carrega da API
+// ═══════════════════════════════════════════
+async function openHistorico(id) {
+  const row = data.find(r => r.id === id);
+  document.getElementById('hist-modal-title').textContent = `📋 Histórico — ${row.cliente}`;
+  const infoEl = document.getElementById('hist-sem-pv-info');
+  if (row.cheg && !row.pv) {
+    const mins = parseDT(row.cheg) ? Math.round((new Date() - parseDT(row.cheg))/60000) : null;
+    const tempoStr = mins !== null ? (mins >= 60 ? `${(mins/60).toFixed(1)}h` : `${mins}min`) : '?';
+    infoEl.innerHTML = `<div class="sem-pv-banner" style="margin-bottom:12px;"><div class="sem-pv-banner-icon">🚛</div><div class="sem-pv-banner-text">Veículo aguardando PV há <span class="sem-pv-banner-time">${tempoStr}</span><br/>Chegada: <strong>${row.cheg}</strong></div></div>`;
+  } else { infoEl.innerHTML = ''; }
+  document.getElementById('hist-modal').classList.add('open');
+  const list = document.getElementById('hist-list');
+  list.innerHTML = '<div class="hist-empty">Carregando...</div>';
+  try {
+    const hist = await apiFetch(`/historico/${id}`);
+    if (!hist.length) { list.innerHTML = '<div class="hist-empty">Nenhum evento registrado ainda.</div>'; return; }
+    list.innerHTML = [...hist].reverse().map(h => {
+      const t = h.tipo.toLowerCase();
+      const cls = t.includes('sem pv') ? 'sem-pv' : t.includes('pv incluído') ? 'pv-ok' : t.includes('motivo') ? 'justificado' : 'log';
+      return `<div class="hist-item ${cls}">
+        <div class="hist-dt">${h.dt}</div>
+        <div class="hist-tipo">${h.tipo}</div>
+        <div class="hist-desc">${h.descricao}</div>
+        ${h.extra ? `<div class="hist-extra">${h.extra}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) { list.innerHTML = `<div class="hist-empty">Erro ao carregar histórico.</div>`; }
+}
+
+// ═══════════════════════════════════════════
+// RELATÓRIO
+// ═══════════════════════════════════════════
+async function openRelatorio(id) {
+  const row = data.find(r => r.id === id);
+  document.getElementById('rpt-modal').classList.add('open');
+  document.getElementById('rpt-content').innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">⏳ Gerando relatório...</div>';
+  let hist = [];
+  try { hist = await apiFetch(`/historico/${id}`); } catch(e) {}
+  const geradoEm = nowStr();
+  const status = autoStatus(row);
+  const bc = getBadgeClass(status);
+  const lt = getLeadTime(row);
+  const ltFmt = fmtLT(lt);
+  const ltLabel = typeof ltFmt === 'object' ? ltFmt.short : ltFmt;
+  const ltSub = typeof ltFmt === 'object' && ltFmt.full ? ltFmt.full : '';
+  const ltClass = lt === null ? 'na' : lt <= 4 ? 'ok' : lt <= 8 ? 'warn' : 'crit';
+  const classif = lt === null ? '—' : lt <= 4 ? '✅ Dentro do prazo' : lt <= 8 ? '⚠ Atenção' : '🚨 Crítico';
+  const ltMeta = `Meta: ≤ 4h · Crítico: > 8h`;
+  const etapasOrdem = ['pv','oe','sep','aval','cheg','enc','saiu','nf','lib'];
+  const etapasConcluidas = etapasOrdem.filter(k => !!row[k]).length;
+  const progresso = Math.round((etapasConcluidas / etapasOrdem.length) * 100);
+  const progressoColor = progresso >= 100 ? 'var(--green)' : progresso >= 50 ? 'var(--amber)' : 'var(--red)';
+  const draftInfo = row.draftDt ? `${row.draftTipo||'—'} · ${row.draftDt}` : 'Não registrado';
+  const tlRows = etapasOrdem.map((k,i) => {
+    const prev = i > 0 ? row[etapasOrdem[i-1]] : true;
+    const done = !!row[k];
+    const active = !done && !!prev;
+    const dotCls = done ? 'done' : active ? 'active' : 'pending';
+    const nameCls = done ? '' : 'pending';
+    let interval = null;
+    if (done && i > 0) {
+      const prevKey = etapasOrdem.slice(0,i).reverse().find(k2 => !!row[k2]);
+      if (prevKey) {
+        const h = diffHoras(row[prevKey], row[k]);
+        if (h !== null) {
+          const intStr = fmtInterval(h);
+          const intCls = h <= 2 ? 'ok' : h <= 6 ? 'warn' : 'crit';
+          interval = `<span class="rpt-tl-interval ${intCls}">${intStr}</span>`;
+        }
+      }
+    }
+    return `<div class="rpt-tl-row">
+      <div class="rpt-tl-dot ${dotCls}">${done?'✓':active?'●':''}</div>
+      <div class="rpt-tl-name ${nameCls}">${FIELD_LABELS[k]||k}</div>
+      <div class="rpt-tl-dt ${done?'done':''}">${row[k]||'—'}</div>
+      ${interval||'<div></div>'}
+    </div>`;
+  }).join('');
+  const ocorrencias = [];
+  if (row.cheg && !row.pv) ocorrencias.push({cls:'crit',icon:'🚛',title:'Veículo chegou sem PV',desc:'Pedido de venda não estava registrado no momento da chegada.'});
+  if (lt !== null && lt > 8) ocorrencias.push({cls:'crit',icon:'⏰',title:'Lead time crítico',desc:`${ltLabel} — acima do limite crítico de 8h.`});
+  else if (lt !== null && lt > 4) ocorrencias.push({cls:'warn',icon:'⚠',title:'Lead time em atenção',desc:`${ltLabel} — acima da meta de 4h.`});
+  const draftAlt = getDraftAlert(row);
+  if (draftAlt && !draftAlt.ok) ocorrencias.push({cls:'warn',icon:'✉',title:'Prazo do draft',desc:draftAlt.label});
+  if (!ocorrencias.length) ocorrencias.push({cls:'ok',icon:'✅',title:'Sem ocorrências',desc:'Nenhuma irregularidade identificada.'});
+  const occsHtml = ocorrencias.map(o=>`<div class="rpt-occ ${o.cls}"><div class="rpt-occ-icon">${o.icon}</div><div><div class="rpt-occ-title">${o.title}</div><div class="rpt-occ-desc">${o.desc}</div></div></div>`).join('');
+  const histHtml = hist.length
+    ? `<div class="rpt-hist">${[...hist].reverse().slice(0,10).map(h=>{
+        const t=h.tipo.toLowerCase();
+        const cls=t.includes('sem pv')?'semPV':t.includes('pv incluído')?'pvOk':t.includes('motivo')?'justificado':'';
+        return `<div class="rpt-hist-row ${cls}"><div><div class="rpt-hist-dt">${h.dt}</div><div class="rpt-hist-tipo">${h.tipo}</div></div><div><div class="rpt-hist-desc">${h.descricao}</div>${h.extra?`<div class="rpt-hist-extra">${h.extra}</div>`:''}</div></div>`;
+      }).join('')}</div>`
+    : '<div style="font-size:11px;color:var(--muted);">Nenhum evento registrado.</div>';
+  const situacao = etapasConcluidas === etapasOrdem.length
+    ? '<span style="color:var(--green);font-weight:700;">✅ Todas as etapas concluídas.</span>'
+    : `Etapa atual: <strong>${FIELD_LABELS[etapasOrdem[etapasConcluidas]]||'—'}</strong>`;
+
+  document.getElementById('rpt-content').innerHTML = `
+  <div class="rpt-header">
+    <div class="rpt-header-left">
+      <div class="rpt-title">Relatório de Carregamento</div>
+      <div class="rpt-cliente">${row.cliente}</div>
+      <div class="rpt-id">#${row.id} · ${row.local} · ${row.pallets||'?'} pallets · Semana ${row.semana}</div>
+    </div>
+    <div class="rpt-header-right">Gerado em<br/>${geradoEm}<br/>Semana ${row.semana}</div>
+  </div>
+  <div class="rpt-body">
+    <div class="rpt-section">
+      <div class="rpt-section-title">① Dados gerais</div>
+      <div class="rpt-cards">
+        <div class="rpt-card"><div class="rpt-card-label">Cliente</div><div class="rpt-card-value">${row.cliente}</div></div>
+        <div class="rpt-card"><div class="rpt-card-label">Pallets</div><div class="rpt-card-value">${row.pallets||'—'}</div></div>
+        <div class="rpt-card"><div class="rpt-card-label">Local</div><div class="rpt-card-value">${row.local}</div></div>
+        <div class="rpt-card"><div class="rpt-card-label">Draft</div><div class="rpt-card-value" style="font-size:10px;font-weight:500;">${draftInfo}</div></div>
+      </div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">② Lead Time</div>
+      <div class="rpt-lt-block">
+        <div class="rpt-lt-card ${ltClass}"><div class="rpt-lt-label">Tempo total</div><div class="rpt-lt-val">${ltLabel}</div><div class="rpt-lt-sub">${ltSub}</div></div>
+        <div class="rpt-lt-card ${ltClass}"><div class="rpt-lt-label">Classificação</div><div class="rpt-lt-val" style="font-size:14px;margin:6px 0;">${classif}</div><div class="rpt-lt-sub">${ltMeta}</div></div>
+        <div class="rpt-lt-card na"><div class="rpt-lt-label">Progresso</div><div class="rpt-lt-val" style="color:${progressoColor};">${progresso}%</div><div class="rpt-lt-sub">${etapasConcluidas} de ${etapasOrdem.length} etapas</div></div>
+      </div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">③ Status Operacional</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="font-size:11px;color:var(--muted);">Status atual:</div>
+          <span class="badge rpt-status-big ${bc}">${status}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:11px;color:var(--muted);">Progresso:</div>
+          <div class="rpt-progress-bar-wrap"><div class="rpt-progress-bar" style="width:${progresso}%;background:${progressoColor};"></div></div>
+          <div style="font-size:11px;font-weight:700;color:${progressoColor};font-family:var(--mono);">${progresso}%</div>
+        </div>
+        <div style="font-size:11px;">${situacao}</div>
+        ${row.motivoStatus && !row.pv ? `<div style="font-size:11px;background:#FFF3E0;border:1px solid #FFCC80;border-radius:6px;padding:6px 10px;color:#E65100;"><strong>Motivo registrado:</strong> ${row.motivoStatus}</div>` : ''}
+      </div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title">④ Linha do Tempo Completa</div>
+      <div class="rpt-timeline">
+        <div class="rpt-tl-row" style="opacity:.5;font-size:9px;padding-bottom:3px;">
+          <div></div><div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Etapa</div>
+          <div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Data / Hora</div>
+          <div style="font-weight:700;text-transform:uppercase;letter-spacing:.05em;text-align:right;">Intervalo</div>
+        </div>
+        ${tlRows}
+      </div>
+    </div>
+    <div class="rpt-section"><div class="rpt-section-title">⑤ Ocorrências e Alertas</div><div class="rpt-occ-list">${occsHtml}</div></div>
+    <div class="rpt-section"><div class="rpt-section-title">⑥ Histórico de Ações</div>${histHtml}</div>
+    <div class="rpt-section"><div class="rpt-section-title">⑦ Observações</div><div class="rpt-obs-box">${row.obs ? row.obs : '<span class="rpt-obs-empty">Nenhuma observação registrada.</span>'}</div></div>
+  </div>
+  <div class="rpt-footer">
+    <div class="rpt-footer-info">Gerado em ${geradoEm} · Sistema de Controle de Lead Time — Expedição<br/>Carregamento #${row.id} · Cliente: ${row.cliente} · Semana ${row.semana}</div>
+    <div style="display:flex;gap:8px;" class="rpt-no-print">
+      <button class="btn-secondary rpt-no-print" onclick="closeRelatorio()">Fechar</button>
+      <button class="btn-primary rpt-no-print" onclick="window.print()">🖨 Imprimir / PDF</button>
+    </div>
+  </div>`;
+}
+
+function closeRelatorio() { document.getElementById('rpt-modal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+buildSemanaOptions();
+carregarDados();
+setInterval(() => { carregarDados(); }, 60000); // refresh a cada 60s
+</script>
+</body>
+</html>
