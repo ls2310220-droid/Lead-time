@@ -1398,6 +1398,15 @@ function closeRelatorio() { document.getElementById('rpt-modal').classList.remov
 buildSemanaOptions();
 carregarDados();
 setInterval(() => { carregarDados(); }, 60000); // refresh a cada 60s
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://xypjacdtbkqomeaimmch.supabase.co",
+      "sb_publishable_XXXX"
+    );
+
+    console.log("Supabase carregado");
 </script>
 </body>
 </html>
