@@ -1395,9 +1395,22 @@ function closeRelatorio() { document.getElementById('rpt-modal').classList.remov
 // ═══════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://xypjacdtbkqomeaimmch.supabase.co",
+  "sb_publishable_XXXX"
+);
+
+console.log("Supabase OK");
+
+// AGORA SIM tudo dentro do script
 buildSemanaOptions();
 carregarDados();
-setInterval(() => { carregarDados(); }, 60000); // refresh a cada 60s
+setInterval(() => { carregarDados(); }, 60000);
+
 </script>
+
 </body>
 </html>
