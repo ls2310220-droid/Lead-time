@@ -607,33 +607,33 @@ async function apiFetch(path, method='GET', body=null) {
 
 async function carregarDados() {
   showLoading(true);
+
   try {
-    data = await apiFetch(`/carregamentos/?semana=${currentSemana}`);
-    // normaliza campos para compatibilidade com o frontend
-    data = data.map(normalizar);
-  } catch(e) {
+    console.log("Buscando dados no Supabase...");
+
+    const { data: resposta, error } = await supabase
+      .from("carregamentos")
+      .select("*")
+      .eq("semana", currentSemana); // mantém seu filtro
+
+    if (error) {
+      throw error;
+    }
+
+    // mantém seu padrão
+    data = resposta.map(normalizar);
+
+  } catch (e) {
+    console.error("Erro:", e);
     toast('Erro ao carregar dados: ' + e.message, 'error');
   }
+
   showLoading(false);
+
   renderTable();
   updateMetrics();
   renderAlerts();
 }
-
-function normalizar(r) {
-  // API retorna snake_case, frontend usa camelCase para draft
-  return {
-    ...r,
-    draftDt:   r.draft_dt   || '',
-    draftTipo: r.draft_tipo || '',
-    motivoStatus: r.motivo_status || ''
-  };
-}
-
-function showLoading(v) {
-  document.getElementById('loading-overlay').style.display = v ? 'flex' : 'none';
-}
-
 // ═══════════════════════════════════════════
 // SEMANAS
 // ═══════════════════════════════════════════
